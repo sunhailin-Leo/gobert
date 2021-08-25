@@ -8,7 +8,7 @@ import (
 	"golang.org/x/text/unicode/norm"
 )
 
-// Basic is a BasicTokenizer that runs Runs basic tokenize (punctuation splitting, lower casing, etc.).
+// Basic is a BasicTokenizer that run basic tokenize (punctuation splitting, lower casing, etc.).
 type Basic struct {
 	// Lower will apply a lower case filter to input
 	Lower bool
@@ -19,14 +19,13 @@ func NewBasic() Basic {
 	return Basic{Lower: true}
 }
 
-// Tokenize will segment a texxt into individual tokens. Follows algorithm from ref-imp
+// Tokenize will segment a text into individual tokens. Follows algorithm from ref-imp
 // Clean, PadChinese, Whitespace Split, Lower?, SplitPunc, Whitespace Split
-func (bt Basic) Tokenize(text string) []string {
+func (bt Basic) Tokenize(text string) (toks []string) {
 	// TODO assert text is unicode
 	// text = unicode(text), from python impl
 	text = clean(text)
 	text = padChinese(text)
-	var toks []string
 	for _, tok := range tokenizeWhitespace(text) {
 		if bt.Lower {
 			tok = strings.ToLower(tok)
@@ -34,8 +33,20 @@ func (bt Basic) Tokenize(text string) []string {
 		}
 		toks = append(toks, splitPunc(tok)...)
 	}
-	toks = tokenizeWhitespace(strings.Join(toks, " "))
+	// if white space is not in toks, it should return immediately
+	if isInStringArray(" ", toks) {
+		toks = tokenizeWhitespace(strings.Join(toks, " "))
+	}
 	return toks
+}
+
+func isInStringArray(data string, array []string) bool {
+	for _, item := range array {
+		if item == data {
+			return true
+		}
+	}
+	return false
 }
 
 func clean(text string) string {
@@ -63,9 +74,8 @@ func stripAccents(text string) string {
 	return b.String()
 }
 
-func splitPunc(text string) []string {
+func splitPunc(text string) (toks []string) {
 	// TODO test
-	var toks []string
 	var b strings.Builder
 	for _, c := range text {
 		if isPunctuation(c) {
@@ -79,20 +89,17 @@ func splitPunc(text string) []string {
 	if b.Len() > 0 {
 		toks = append(toks, b.String())
 	}
-	return toks
+	return
 }
 
-//tokenizeWhitespace splits text into tokeens by whitespace, per python semantics empty strings are not included
-func tokenizeWhitespace(text string) []string {
-	split := strings.Split(text, " ")
-	var toks []string
-	for _, tok := range split {
+//tokenizeWhitespace splits text into tokens by whitespace, per python semantics empty strings are not included
+func tokenizeWhitespace(text string) (toks []string) {
+	for _, tok := range strings.Split(text, " ") {
 		if tok != "" {
 			toks = append(toks, tok)
 		}
 	}
-	return toks
-
+	return
 }
 
 //padChinese will add space padding around all CJK chars

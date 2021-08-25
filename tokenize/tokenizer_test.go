@@ -1,11 +1,11 @@
 package tokenize_test
 
 import (
+	"fmt"
+	"github.com/sunhailin-Leo/gobert/tokenize"
+	"github.com/sunhailin-Leo/gobert/tokenize/vocab"
 	"reflect"
 	"testing"
-
-	"github.com/buckhx/gobert/tokenize"
-	"github.com/buckhx/gobert/tokenize/vocab"
 )
 
 func TestBasic(t *testing.T) {
@@ -48,4 +48,24 @@ func TestWordpiece(t *testing.T) {
 			t.Errorf("Test %d - Invalid Tokenization - Want: %v, Got: %v", i, test.tokens, toks)
 		}
 	}
+}
+
+func TestChineseTokenizer(t *testing.T) {
+	voc, _ := vocab.FromFile("../export/vocab.txt")
+	tkz := tokenize.NewTokenizer(voc)
+	toks := tkz.Tokenize("广东省深圳市南山区人民政府")
+	fmt.Println(toks)
+	if !reflect.DeepEqual(toks, []string{"广", "东", "省", "深", "圳", "市", "南", "山", "区", "人", "民", "政", "府"}) {
+		t.Errorf("Result is not equal")
+	}
+}
+
+func BenchmarkChineseTokenizer(b *testing.B) {
+	voc, _ := vocab.FromFile("../export/vocab.txt")
+	tkz := tokenize.NewTokenizer(voc)
+	b.ResetTimer()
+	for i := 0; i < b.N; i++ {
+		_ = tkz.Tokenize("广东省深圳市南山区人民政府")
+	}
+	b.ReportAllocs()
 }

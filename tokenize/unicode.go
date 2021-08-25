@@ -43,7 +43,7 @@ func isWhitespace(c rune) bool {
 	return unicode.Is(unicode.Zs, c)
 }
 
-// IsControl checks wher rune c is a BERT control character
+// IsControl checks whether rune c is a BERT control character
 func isControl(c rune) bool {
 	switch c {
 	case '\t':
@@ -56,7 +56,7 @@ func isControl(c rune) bool {
 	return unicode.In(c, unicode.Cc, unicode.Cf)
 }
 
-// IsPunctuation checks wher rune c is a BERT punctuation character
+// IsPunctuation checks whether rune c is a BERT punctuation character
 func isPunctuation(c rune) bool {
 	return unicode.In(c, _Bp, unicode.P)
 }

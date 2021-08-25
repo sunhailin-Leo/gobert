@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/buckhx/gobert/model"
+	"github.com/sunhailin-Leo/gobert/model"
 	"gonum.org/v1/gonum/mat"
 	"gonum.org/v1/gonum/stat"
 )

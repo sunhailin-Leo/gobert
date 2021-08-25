@@ -1,17 +1,10 @@
 # gobert
-![stability-experimental](https://img.shields.io/badge/stability-experimental-orange.svg)
-[![GoDoc](https://godoc.org/github.com/buckhx/gobert?status.svg)](https://godoc.org/github.com/buckhx/gobert)
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+Forked from [github.com/buckhx/gobert](https://github.com/buckhx/gobert)
 
 Go bindings for operationalizing [BERT](https://github.com/google-research/bert) models. Train in Python, run in Go.
 
 Simply put, gobert translates text sentences from any language into fixed length vectors called "embeddings".
 These embeddings can be used for downstream learning tasks or directly for comparison.
-
-
-The following demo shows a simple semantic search engine directly comparing sentence vectors.
-[![asciicast](https://asciinema.org/a/259849.png)](https://asciinema.org/a/259849?t=10s)
-
 
 ### BERT
 
@@ -23,7 +16,7 @@ BERT is a state of the art NLP model that can be leveraged for transfer learning
 
 # Under Active Development
 
-This is a work in progress and should not used until a version has be tagged and a go.mod is present.
+This is a work in progress and should not use until a version has be tagged and a go.mod is present.
 Test coverage will also be added when the API settles.
 
 The following advice from Go TensorFlow applies:

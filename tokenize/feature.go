@@ -20,7 +20,7 @@ type Feature struct {
 	Tokens   []string
 	TokenIDs []int32
 	Mask     []int32 // short?
-	TypeIDs  []int32 // seqeuence ids, short?
+	TypeIDs  []int32 // sequence ids, short?
 }
 
 // Count will return the number of tokens in the feature by counting the mask bits

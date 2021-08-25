@@ -4,7 +4,7 @@ import (
 	"reflect"
 	"testing"
 
-	"github.com/buckhx/gobert/tokenize/vocab"
+	"github.com/sunhailin-Leo/gobert/tokenize/vocab"
 )
 
 func TestFeatureCount(t *testing.T) {

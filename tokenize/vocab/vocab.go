@@ -41,7 +41,7 @@ func FromFile(path string) (Dict, error) {
 	return voc, nil
 }
 
-// New iwll return a a covab dict from the given tokens, IDs will match index
+// New will return a vocab dict from the given tokens, IDs will match index
 func New(tokens []string) Dict {
 	v := make(map[string]ID, len(tokens))
 	for i, t := range tokens {
@@ -55,17 +55,17 @@ func (v Dict) Add(token string) {
 	v.tokens[token] = ID(v.Size())
 }
 
-// GetID will return the ID of the token in the vocab. Will be negative if it doesn't exists
+// GetID will return the ID of the token in the vocab. Will be negative if it doesn't exist
 func (v Dict) GetID(token string) ID {
 	id, ok := v.tokens[token]
 	if !ok {
 		return ID(-1)
 	}
-	return ID(id)
+	return id
 }
 
 /*
-// GetToken will get a token by the ID, returns the mepty string if ID does not exist
+// GetToken will get a token by the ID, returns the empty string if ID does not exist
 func (v Dict) GetToken(id ID) token {
 	for k, v := range v.tokens {
 		if v =
@@ -103,7 +103,7 @@ func (v Dict) LongestSubstring(token string) string {
 	return ""
 }
 
-/*
+// ConvertItems convert items to ids
 func (v Dict) ConvertItems(items []string) []ID {
 	ids := make([]ID, len(items))
 	for i, m := range items {
@@ -112,7 +112,7 @@ func (v Dict) ConvertItems(items []string) []ID {
 	return ids
 }
 
+// ConvertTokens convert token to id
 func (v Dict) ConvertTokens(tokens []string) []ID {
 	return v.ConvertItems(tokens)
 }
-*/

@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/buckhx/gobert/model"
+	"github.com/sunhailin-Leo/gobert/model"
 )
 
 func main() {

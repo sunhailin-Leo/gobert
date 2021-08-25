@@ -4,7 +4,7 @@ import (
 	"log"
 	"strings"
 
-	"github.com/buckhx/gobert/model"
+	"github.com/sunhailin-Leo/gobert/model"
 	"golang.org/x/sync/errgroup"
 	"gonum.org/v1/gonum/mat"
 	"gonum.org/v1/gonum/stat"
