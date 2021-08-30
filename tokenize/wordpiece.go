@@ -42,7 +42,8 @@ func (wp Wordpiece) Tokenize(text string) (toks []string) {
 		}
 		return toks
 	}
-	return wp.subTokenize(text)
+	toks = wp.subTokenize(text)
+	return toks
 }
 
 // subTokenize for Tokenize (impl from python)
