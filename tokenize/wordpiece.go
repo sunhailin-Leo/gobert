@@ -32,10 +32,10 @@ func NewWordpiece(voc vocab.Dict) Wordpiece {
 // Tokenize will segment the text into sub-word tokens from the supplied vocabulary
 // NOTE: This implementation does not EXACTLY match the ref-impl and behaves slightly differently
 // See https://github.com/google-research/bert/issues/763
-func (wp Wordpiece) Tokenize(text string) (toks []string) {
+func (wp Wordpiece) Tokenize(text string) []string {
 	// TODO: determine if utf8 conversion is necessary, per python impl
 	// text = convert_to_unicode(text)
-	// Decrease a for-loop
+	var toks []string
 	if strings.Index(text, " ") > 0 {
 		for _, tok := range tokenizeWhitespaceV1(text) {
 			toks = append(toks, wp.subTokenize(tok)...)
