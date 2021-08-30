@@ -116,3 +116,8 @@ func (v Dict) ConvertItems(items []string) []ID {
 func (v Dict) ConvertTokens(tokens []string) []ID {
 	return v.ConvertItems(tokens)
 }
+
+func (v Dict) IsInVocab(token string) bool {
+	_, exists := v.tokens[token]
+	return exists
+}

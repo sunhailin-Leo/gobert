@@ -37,46 +37,44 @@ func (wp Wordpiece) Tokenize(text string) (toks []string) {
 	// text = convert_to_unicode(text)
 	// Decrease a for-loop
 	if strings.Index(text, " ") > 0 {
-		for _, tok := range tokenizeWhitespace(text) {
-			if len(tok) > wp.maxWordChars {
-				toks = append(toks, wp.unknownToken)
-				continue
-			}
-			for len(tok) > 0 && tok != "##" {
-				sub := wp.vocab.LongestSubstring(tok)
-				if sub == "" {
-					toks = append(toks, wp.unknownToken)
-					break
-				}
-				toks = append(toks, sub)
-				// if tok[len(sub):] is empty, it should break this for-loop, instead of string concat
-				if tok[len(sub):] == "" {
-					break
-				}
-				// fmt.Sprintf will increase useless memory allocation
-				tok = "##" + tok[len(sub):]
-			}
-		}
-		return toks
-	} else {
-		if len(text) > wp.maxWordChars {
-			toks = append(toks, wp.unknownToken)
-			return toks
-		}
-		for len(text) > 0 && text != "##" {
-			sub := wp.vocab.LongestSubstring(text)
-			if sub == "" {
-				toks = append(toks, wp.unknownToken)
-				return toks
-			}
-			toks = append(toks, sub)
-			if text[len(sub):] == "" {
-				return toks
-			}
-			text = "##" + text[len(sub):]
+		for _, tok := range tokenizeWhitespaceV1(text) {
+			toks = append(toks, wp.subTokenize(tok)...)
 		}
 		return toks
 	}
+	return wp.subTokenize(text)
+}
+
+// subTokenize for Tokenize (impl from python)
+func (wp Wordpiece) subTokenize(text string) (toks []string) {
+	if len(text) > wp.maxWordChars {
+		toks = append(toks, wp.unknownToken)
+		return toks
+	}
+	start := 0
+	for start < len(text) {
+		end := len(text)
+		subStrIsValid := false
+		var curSubstr string
+		for start < end {
+			curSubstr = text[start:end]
+			if wp.vocab.IsInVocab(curSubstr) {
+				subStrIsValid = true
+				break
+			}
+			end -= 1
+		}
+		if start > 0 {
+			curSubstr = "##" + curSubstr
+		}
+		if !subStrIsValid {
+			toks = append(toks, wp.unknownToken)
+			break
+		}
+		toks = append(toks, curSubstr)
+		start = end
+	}
+	return toks
 }
 
 // SetMaxWordChars will set the max chars for a word to be tokenized,

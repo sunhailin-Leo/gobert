@@ -99,7 +99,12 @@ func tokenizeWhitespace(text string) (toks []string) {
 			toks = append(toks, tok)
 		}
 	}
-	return
+	return toks
+}
+
+//tokenizeWhitespaceV1 splits text into tokens by whitespace, per python semantics empty strings are not included
+func tokenizeWhitespaceV1(text string) (toks []string) {
+	return strings.Fields(strings.TrimSpace(text))
 }
 
 //padChinese will add space padding around all CJK chars

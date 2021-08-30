@@ -80,8 +80,10 @@ func TestChineseWordpieceTokenizer(t *testing.T) {
 	}
 }
 
+// Trace the git push log and check the function Tokenize in wordpiece.go
 // Result1: BenchmarkChineseWordpieceTokenizer-12    	  207464	      5664 ns/op	     864 B/op	      19 allocs/op
 // Result2: BenchmarkChineseWordpieceTokenizer-12    	  219673	      5336 ns/op	     832 B/op	      17 allocs/op
+// Result3: BenchmarkChineseWordpieceTokenizer-12    	  187278	      5966 ns/op	     560 B/op	      17 allocs/op
 func BenchmarkChineseWordpieceTokenizer(b *testing.B) {
 	voc, _ := vocab.FromFile("../export/vocab.txt")
 	tkz := tokenize.NewWordpiece(voc)
