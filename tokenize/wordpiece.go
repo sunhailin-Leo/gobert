@@ -32,48 +32,36 @@ func NewWordpiece(voc vocab.Dict) Wordpiece {
 // Tokenize will segment the text into sub-word tokens from the supplied vocabulary
 // NOTE: This implementation does not EXACTLY match the ref-impl and behaves slightly differently
 // See https://github.com/google-research/bert/issues/763
-func (wp Wordpiece) Tokenize(text string) []string {
+func (wp Wordpiece) Tokenize(text string) (toks []string) {
 	// TODO: determine if utf8 conversion is necessary, per python impl
 	// text = convert_to_unicode(text)
-	var toks []string
+	// Decrease a for-loop
 	if strings.Index(text, " ") > 0 {
-		for _, tok := range tokenizeWhitespaceV1(text) {
-			toks = append(toks, wp.subTokenize(tok)...)
+		for _, tok := range tokenizeWhitespace(text) {
+			toks = append(toks, wp.SubTokenize(tok)...)
 		}
 		return toks
 	}
-	toks = wp.subTokenize(text)
-	return toks
+	return wp.SubTokenize(text)
 }
 
-// subTokenize for Tokenize (impl from python)
-func (wp Wordpiece) subTokenize(text string) (toks []string) {
+// SubTokenize impl for old method
+func (wp Wordpiece) SubTokenize(text string) (toks []string) {
 	if len(text) > wp.maxWordChars {
 		toks = append(toks, wp.unknownToken)
 		return toks
 	}
-	start := 0
-	for start < len(text) {
-		end := len(text)
-		subStrIsValid := false
-		var curSubstr string
-		for start < end {
-			curSubstr = text[start:end]
-			if wp.vocab.IsInVocab(curSubstr) {
-				subStrIsValid = true
-				break
-			}
-			end -= 1
-		}
-		if start > 0 {
-			curSubstr = "##" + curSubstr
-		}
-		if !subStrIsValid {
+	for len(text) > 0 && text != "##" {
+		sub := wp.vocab.LongestSubstring(text)
+		if sub == "" {
 			toks = append(toks, wp.unknownToken)
-			break
+			return toks
 		}
-		toks = append(toks, curSubstr)
-		start = end
+		toks = append(toks, sub)
+		if text[len(sub):] == "" {
+			return toks
+		}
+		text = "##" + text[len(sub):]
 	}
 	return toks
 }

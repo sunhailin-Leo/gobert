@@ -60,6 +60,7 @@ func TestChineseTokenizer(t *testing.T) {
 	}
 }
 
+// BenchmarkChineseTokenizer-12    	  170126	      6860 ns/op	    2768 B/op	      76 allocs/op
 func BenchmarkChineseTokenizer(b *testing.B) {
 	voc, _ := vocab.FromFile("../export/vocab.txt")
 	tkz := tokenize.NewTokenizer(voc)
