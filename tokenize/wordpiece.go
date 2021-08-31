@@ -47,23 +47,43 @@ func (wp Wordpiece) Tokenize(text string) (toks []string) {
 
 // SubTokenize impl for old method
 func (wp Wordpiece) SubTokenize(text string) (toks []string) {
-	if len(text) > wp.maxWordChars {
-		toks = append(toks, wp.unknownToken)
+	var isLarge bool
+	isLarge, toks = wp.CheckIsLargeThanMaxWordChars(text, toks)
+	if isLarge {
 		return toks
 	}
+	return wp.CharLoop(text, toks)
+}
+
+// CheckIsLargeThanMaxWordChars check text is larger than wp.maxWordChars
+func (wp Wordpiece) CheckIsLargeThanMaxWordChars(text string, result []string) (bool, []string) {
+	if len(text) > wp.maxWordChars {
+		result = append(result, wp.unknownToken)
+		return true, result
+	}
+	return false, result
+}
+
+// CharLoop simplify logic and avoid slice memory leak
+func (wp Wordpiece) CharLoop(text string, result []string) []string {
 	for len(text) > 0 && text != "##" {
 		sub := wp.vocab.LongestSubstring(text)
 		if sub == "" {
-			toks = append(toks, wp.unknownToken)
-			return toks
+			result = append(result, wp.unknownToken)
+			break
 		}
-		toks = append(toks, sub)
+		result = append(result, sub)
+		if len(text) == len(sub) {
+			break
+		}
 		if text[len(sub):] == "" {
-			return toks
+			break
+		} else {
+			text = "##" + text[len(sub):]
 		}
-		text = "##" + text[len(sub):]
 	}
-	return toks
+	text = ""
+	return result
 }
 
 // SetMaxWordChars will set the max chars for a word to be tokenized,
