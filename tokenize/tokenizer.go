@@ -5,7 +5,10 @@
 // for example, BERT considers '$' punctuation, but unicode does not.
 package tokenize
 
-import "github.com/sunhailin-Leo/gobert/tokenize/vocab"
+import (
+	"github.com/sunhailin-Leo/gobert/tokenize/vocab"
+	"github.com/valyala/bytebufferpool"
+)
 
 // Tokenizer is an interface for chunking a string into it's tokens as per the BERT implementation
 type Tokenizer interface {
@@ -20,10 +23,10 @@ type VocabTokenizer interface {
 
 // NewTokenizer returns a new FullTokenizer
 // Use Option array to modify default behavior
-func NewTokenizer(voc vocab.Dict, opts ...Option) VocabTokenizer {
+func NewTokenizer(voc vocab.Dict, buf *bytebufferpool.ByteBuffer, opts ...Option) VocabTokenizer {
 	tkz := Full{
 		Basic:     NewBasic(),
-		Wordpiece: NewWordpiece(voc),
+		Wordpiece: NewWordpiece(voc, buf),
 	}
 	for _, opt := range opts {
 		tkz = opt(tkz)

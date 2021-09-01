@@ -1,9 +1,10 @@
 package tokenize
 
 import (
+	"strings"
+
 	"github.com/sunhailin-Leo/gobert/tokenize/vocab"
 	"github.com/valyala/bytebufferpool"
-	"strings"
 )
 
 // DefaultMaxWordChars is the max length of a token for it to be tokenized, otherwise marked as unknown
@@ -23,12 +24,12 @@ type Wordpiece struct {
 
 // NewWordpiece returns a WordpieceTokenizer with the default settings.
 // Generally should be used in a FullTokenizer
-func NewWordpiece(voc vocab.Dict) Wordpiece {
+func NewWordpiece(voc vocab.Dict, buffer *bytebufferpool.ByteBuffer) Wordpiece {
 	return Wordpiece{
 		vocab:        voc,
 		maxWordChars: DefaultMaxWordChars,
 		unknownToken: DefaultUnknownToken,
-		bufferPool:   bytebufferpool.Get(),
+		bufferPool:   buffer,
 	}
 }
 
