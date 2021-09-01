@@ -2,6 +2,7 @@ package tokenize
 
 import (
 	"github.com/sunhailin-Leo/gobert/tokenize/vocab"
+	"github.com/valyala/bytebufferpool"
 	"strings"
 )
 
@@ -17,6 +18,7 @@ type Wordpiece struct {
 	vocab        vocab.Dict
 	maxWordChars int
 	unknownToken string
+	bufferPool   *bytebufferpool.ByteBuffer
 }
 
 // NewWordpiece returns a WordpieceTokenizer with the default settings.
@@ -26,53 +28,60 @@ func NewWordpiece(voc vocab.Dict) Wordpiece {
 		vocab:        voc,
 		maxWordChars: DefaultMaxWordChars,
 		unknownToken: DefaultUnknownToken,
+		bufferPool:   bytebufferpool.Get(),
 	}
 }
 
 // Tokenize will segment the text into sub-word tokens from the supplied vocabulary
 // NOTE: This implementation does not EXACTLY match the ref-impl and behaves slightly differently
 // See https://github.com/google-research/bert/issues/763
-func (wp Wordpiece) Tokenize(text string) (toks []string) {
+func (wp Wordpiece) Tokenize(text string) []string {
 	// TODO: determine if utf8 conversion is necessary, per python impl
 	// text = convert_to_unicode(text)
-	// Decrease a for-loop
+	defer bytebufferpool.Put(wp.bufferPool)
 	if strings.Index(text, " ") > 0 {
+		toks := make([]string, 0)
 		for _, tok := range tokenizeWhitespace(text) {
-			toks = append(toks, wp.SubTokenize(tok)...)
+			wp.SubTokenize(tok)
+			toks = append(toks, strings.Fields(wp.bufferPool.String())...)
+			wp.bufferPool.Reset()
 		}
 		return toks
 	}
-	return wp.SubTokenize(text)
+	wp.SubTokenize(text)
+	return strings.Fields(wp.bufferPool.String())
 }
 
 // SubTokenize impl for old method
-func (wp Wordpiece) SubTokenize(text string) (toks []string) {
-	var isLarge bool
-	isLarge, toks = wp.CheckIsLargeThanMaxWordChars(text, toks)
-	if isLarge {
-		return toks
+func (wp Wordpiece) SubTokenize(text string) bool {
+	if wp.CheckIsLargeThanMaxWordChars(text) {
+		return false
 	}
-	return wp.CharLoop(text, toks)
+	return wp.CharLoop(text)
 }
 
 // CheckIsLargeThanMaxWordChars check text is larger than wp.maxWordChars
-func (wp Wordpiece) CheckIsLargeThanMaxWordChars(text string, result []string) (bool, []string) {
+func (wp Wordpiece) CheckIsLargeThanMaxWordChars(text string) bool {
 	if len(text) > wp.maxWordChars {
-		result = append(result, wp.unknownToken)
-		return true, result
+		wp.storeResult(wp.unknownToken)
+		return true
 	}
-	return false, result
+	return false
 }
 
 // CharLoop simplify logic and avoid slice memory leak
-func (wp Wordpiece) CharLoop(text string, result []string) []string {
+func (wp Wordpiece) CharLoop(text string) bool {
+	if len([]rune(text)) == 1 {
+		wp.storeResult(text)
+		return true
+	}
 	for len(text) > 0 && text != "##" {
 		sub := wp.vocab.LongestSubstring(text)
 		if sub == "" {
-			result = append(result, wp.unknownToken)
+			wp.storeResult(wp.unknownToken)
 			break
 		}
-		result = append(result, sub)
+		wp.storeResult(sub)
 		if len(text) == len(sub) {
 			break
 		}
@@ -82,8 +91,15 @@ func (wp Wordpiece) CharLoop(text string, result []string) []string {
 			text = "##" + text[len(sub):]
 		}
 	}
-	text = ""
-	return result
+	return true
+}
+
+// storeResult store tokenize result
+func (wp Wordpiece) storeResult(result string) {
+	_, writeErr := wp.bufferPool.WriteString(result + "\n")
+	if writeErr != nil {
+		panic(writeErr)
+	}
 }
 
 // SetMaxWordChars will set the max chars for a word to be tokenized,
