@@ -36,20 +36,23 @@ func NewWordpiece(voc vocab.Dict) Wordpiece {
 // NOTE: This implementation does not EXACTLY match the ref-impl and behaves slightly differently
 // See https://github.com/google-research/bert/issues/763
 func (wp Wordpiece) Tokenize(text string) []string {
-	// TODO: determine if utf8 conversion is necessary, per python impl
-	// text = convert_to_unicode(text)
-	defer bytebufferpool.Put(wp.bufferPool)
+	defer func() { wp.bufferPool.Reset() }()
 	if strings.Index(text, " ") > 0 {
 		toks := make([]string, 0)
-		for _, tok := range tokenizeWhitespace(text) {
-			wp.SubTokenize(tok)
+		for _, tok := range tokenizeWhitespaceV1(text) {
+			if !wp.SubTokenize(tok) {
+				toks = append(toks, strings.Fields(wp.bufferPool.String())...)
+				wp.bufferPool.Reset()
+				break
+			}
 			toks = append(toks, strings.Fields(wp.bufferPool.String())...)
 			wp.bufferPool.Reset()
 		}
 		return toks
 	}
 	wp.SubTokenize(text)
-	return strings.Fields(wp.bufferPool.String())
+	toks := strings.Fields(wp.bufferPool.String())
+	return toks
 }
 
 // SubTokenize impl for old method
@@ -57,7 +60,8 @@ func (wp Wordpiece) SubTokenize(text string) bool {
 	if wp.CheckIsLargeThanMaxWordChars(text) {
 		return false
 	}
-	return wp.CharLoop(text)
+	wp.CharLoop(text)
+	return true
 }
 
 // CheckIsLargeThanMaxWordChars check text is larger than wp.maxWordChars
@@ -70,11 +74,7 @@ func (wp Wordpiece) CheckIsLargeThanMaxWordChars(text string) bool {
 }
 
 // CharLoop simplify logic and avoid slice memory leak
-func (wp Wordpiece) CharLoop(text string) bool {
-	if len([]rune(text)) == 1 {
-		wp.storeResult(text)
-		return true
-	}
+func (wp Wordpiece) CharLoop(text string) {
 	for len(text) > 0 && text != "##" {
 		sub := wp.vocab.LongestSubstring(text)
 		if sub == "" {
@@ -91,7 +91,6 @@ func (wp Wordpiece) CharLoop(text string) bool {
 			text = "##" + text[len(sub):]
 		}
 	}
-	return true
 }
 
 // storeResult store tokenize result

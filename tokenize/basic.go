@@ -103,7 +103,7 @@ func tokenizeWhitespace(text string) (toks []string) {
 }
 
 //tokenizeWhitespaceV1 splits text into tokens by whitespace, per python semantics empty strings are not included
-func tokenizeWhitespaceV1(text string) (toks []string) {
+func tokenizeWhitespaceV1(text string) []string {
 	return strings.Fields(strings.TrimSpace(text))
 }
 

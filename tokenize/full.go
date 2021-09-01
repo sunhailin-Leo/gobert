@@ -10,11 +10,19 @@ type Full struct {
 
 // Tokenize will tokenize the input text
 // First basic is applited, then wordpiece on the tokens from basic
-func (f Full) Tokenize(text string) (toks []string) {
+func (f Full) Tokenize(text string) []string {
+	toks := make([]string, 0)
+	defer func() {
+		toks = toks[:0]
+	}()
 	for _, tok := range f.Basic.Tokenize(text) {
-		toks = append(toks, f.Wordpiece.Tokenize(tok)...)
+		if len([]rune(tok)) == 1 {
+			toks = append(toks, tok)
+		} else {
+			toks = append(toks, f.Wordpiece.Tokenize(tok)...)
+		}
 	}
-	return
+	return toks
 }
 
 // Vocab returns the vocab used for this tokenizer
