@@ -1,6 +1,7 @@
 package tokenize
 
 import (
+	"github.com/valyala/bytebufferpool"
 	"reflect"
 	"testing"
 
@@ -9,7 +10,7 @@ import (
 
 func TestFeatureCount(t *testing.T) {
 	voc := vocab.New([]string{"[CLS]", "[SEP]", "the", "dog", "is", "hairy", "."})
-	ff := FeatureFactory{Tokenizer: NewTokenizer(voc), SeqLen: 7}
+	ff := FeatureFactory{Tokenizer: NewTokenizer(voc, bytebufferpool.Get()), SeqLen: 7}
 	for _, test := range []struct {
 		text  string
 		count int
@@ -29,7 +30,7 @@ func TestFeatureCount(t *testing.T) {
 
 func Test_sequenceFeature(t *testing.T) {
 	voc := vocab.New([]string{"[CLS]", "[SEP]", "the", "dog", "is", "hairy", "."})
-	tkz := NewTokenizer(voc)
+	tkz := NewTokenizer(voc, bytebufferpool.Get())
 	for _, test := range []struct {
 		text    string
 		feature Feature

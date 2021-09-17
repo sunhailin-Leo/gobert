@@ -8,6 +8,7 @@ import (
 	"github.com/sunhailin-Leo/gobert/tokenize"
 	"github.com/sunhailin-Leo/gobert/tokenize/vocab"
 	tf "github.com/tensorflow/tensorflow/tensorflow/go"
+	"github.com/valyala/bytebufferpool"
 )
 
 // Operation names
@@ -54,7 +55,7 @@ func NewBert(m *tf.SavedModel, vocabPath string, opts ...BertOption) (Bert, erro
 	if err != nil {
 		return Bert{}, err
 	}
-	tkz := tokenize.NewTokenizer(voc)
+	tkz := tokenize.NewTokenizer(voc, bytebufferpool.Get())
 	b := Bert{
 		m:          m,
 		factory:    &tokenize.FeatureFactory{Tokenizer: tkz, SeqLen: DefaultSeqLen},

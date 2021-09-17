@@ -2,10 +2,12 @@ package tokenize_test
 
 import (
 	"fmt"
-	"github.com/sunhailin-Leo/gobert/tokenize"
-	"github.com/sunhailin-Leo/gobert/tokenize/vocab"
 	"reflect"
 	"testing"
+
+	"github.com/sunhailin-Leo/gobert/tokenize"
+	"github.com/sunhailin-Leo/gobert/tokenize/vocab"
+	"github.com/valyala/bytebufferpool"
 )
 
 func TestBasic(t *testing.T) {
@@ -42,8 +44,8 @@ func TestWordpiece(t *testing.T) {
 		//	{"unwantedX", []string{"[UNK]"}},
 		//{"unwantedX running", []string{"[UNK]", "runn", "##ing"}},
 	} {
-		tkz := tokenize.NewWordpiece(voc)
-		toks := tkz.Tokenize(test.text)
+		tkz := tokenize.NewWordpiece(voc, bytebufferpool.Get())
+		toks := tkz.WordTokenize(test.text)
 		if !reflect.DeepEqual(toks, test.tokens) {
 			t.Errorf("Test %d - Invalid Tokenization - Want: %v, Got: %v", i, test.tokens, toks)
 		}
@@ -52,7 +54,7 @@ func TestWordpiece(t *testing.T) {
 
 func TestChineseTokenizer(t *testing.T) {
 	voc, _ := vocab.FromFile("../export/vocab.txt")
-	tkz := tokenize.NewTokenizer(voc)
+	tkz := tokenize.NewTokenizer(voc, bytebufferpool.Get())
 	toks := tkz.Tokenize("广东省深圳市南山区人民政府")
 	fmt.Println(toks)
 	if !reflect.DeepEqual(toks, []string{"广", "东", "省", "深", "圳", "市", "南", "山", "区", "人", "民", "政", "府"}) {
@@ -63,7 +65,7 @@ func TestChineseTokenizer(t *testing.T) {
 // BenchmarkChineseTokenizer-12    	  170126	      6860 ns/op	    2768 B/op	      76 allocs/op
 func BenchmarkChineseTokenizer(b *testing.B) {
 	voc, _ := vocab.FromFile("../export/vocab.txt")
-	tkz := tokenize.NewTokenizer(voc)
+	tkz := tokenize.NewTokenizer(voc, bytebufferpool.Get())
 	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
 		_ = tkz.Tokenize("广东省深圳市南山区人民政府")
@@ -73,8 +75,8 @@ func BenchmarkChineseTokenizer(b *testing.B) {
 
 func TestChineseWordpieceTokenizer(t *testing.T) {
 	voc, _ := vocab.FromFile("../export/vocab.txt")
-	tkz := tokenize.NewWordpiece(voc)
-	toks := tkz.Tokenize("广东省深圳市南山区人民政府")
+	tkz := tokenize.NewWordpiece(voc, bytebufferpool.Get())
+	toks := tkz.WordTokenize("广东省深圳市南山区人民政府")
 	fmt.Println(toks)
 	if !reflect.DeepEqual(toks, []string{"广", "##东", "##省", "##深", "##圳", "##市", "##南", "##山", "##区", "##人", "##民", "##政", "##府"}) {
 		t.Errorf("Result is not equal")
@@ -86,10 +88,10 @@ func TestChineseWordpieceTokenizer(t *testing.T) {
 // Result2: BenchmarkChineseWordpieceTokenizer-12    	  219673	      5336 ns/op	     832 B/op	      17 allocs/op
 func BenchmarkChineseWordpieceTokenizer(b *testing.B) {
 	voc, _ := vocab.FromFile("../export/vocab.txt")
-	tkz := tokenize.NewWordpiece(voc)
+	tkz := tokenize.NewWordpiece(voc, bytebufferpool.Get())
 	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
-		_ = tkz.Tokenize("广东省深圳市南山区人民政府")
+		_ = tkz.WordTokenize("广东省深圳市南山区人民政府")
 	}
 	b.ReportAllocs()
 }
